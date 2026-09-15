@@ -16,4 +16,16 @@ class Product {
     required this.thumbnail,
     required this.images,
   });
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'],
+      title: json['title'],
+      description: json['description'],
+      price: json['price'],
+      rating: json['rating'],
+      thumbnail: json['thumbnail'],
+      images: List<String>.from(json['images']),
+    );
+  }
 }
