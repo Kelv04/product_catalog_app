@@ -4,6 +4,7 @@ import 'package:product_catalog_app/model/product_model.dart';
 
 class ProductAPI {
   static const baseURL = 'https://dummyjson.com/products';
+  // static const baseURL = '';
 
   Future<List<Product>> fetchProducts({int limit = 20, int skip = 0}) async {
     final response = await http.get(Uri.parse('$baseURL?limit=$limit&skip=$skip'));
