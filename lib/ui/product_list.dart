@@ -20,6 +20,7 @@ class _ProductListPageState extends State<ProductListPage> {
   bool _isLoading = false;
   bool _hasError = false;
   bool _hasMore = false;
+  bool _isSearching = false;
   int skip = 0;
   final int limit = 20;
 
@@ -64,6 +65,10 @@ class _ProductListPageState extends State<ProductListPage> {
       return;
     }
 
+    if (_isSearching) {
+      return;
+    }
+
     setState(() {
       _hasMore = true;
     });
@@ -99,6 +104,7 @@ class _ProductListPageState extends State<ProductListPage> {
     setState(() {
       _isLoading = true;
       _hasError = false;
+      _isSearching = true;
     });
 
     try {
@@ -154,6 +160,11 @@ class _ProductListPageState extends State<ProductListPage> {
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           _searchController.clear();
+                          setState(() {
+                            _isSearching = false;
+                            skip = 0;
+                          });
+                          _loadProducts();
                         },
                       )
                     : null,
