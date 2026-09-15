@@ -55,7 +55,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         ),
       ),
       body: _isLoading
-          ? const CircularProgressIndicator()
+          ? Center(child: const CircularProgressIndicator())
           : _hasError
           ? Column(
               mainAxisAlignment: MainAxisAlignment.center,

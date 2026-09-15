@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:product_catalog_app/api/product_api.dart';
 import 'package:product_catalog_app/model/product_model.dart';
@@ -13,6 +14,7 @@ class ProductListPage extends StatefulWidget {
 class _ProductListPageState extends State<ProductListPage> {
   final ProductAPI _api = ProductAPI();
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
 
   List<Product> _products = [];
   bool _isLoading = false;
@@ -20,6 +22,8 @@ class _ProductListPageState extends State<ProductListPage> {
   bool _hasMore = false;
   int skip = 0;
   final int limit = 20;
+
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -32,6 +36,8 @@ class _ProductListPageState extends State<ProductListPage> {
         _loadMoreProducts();
       }
     });
+
+    _searchController.addListener(_onSearchChanged);
   }
 
   void _loadProducts() async {
@@ -76,6 +82,40 @@ class _ProductListPageState extends State<ProductListPage> {
     }
   }
 
+  void _onSearchChanged() {
+    if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      final query = _searchController.text.trim();
+      if (query.isEmpty) {
+        skip = 0;
+        _loadProducts();
+      } else {
+        _searchProducts(query);
+      }
+    });
+  }
+
+  Future<void> _searchProducts(String query) async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+
+    try {
+      _products = await _api.searchProducts(query);
+      setState(() {
+        _isLoading = false;
+        _hasMore = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+      });
+    }
+  }
+  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,49 +129,74 @@ class _ProductListPageState extends State<ProductListPage> {
           ),
         ),
       ),
-      body: Center(
-        child: _isLoading
-            ? const CircularProgressIndicator()
-            : _hasError
-            ? Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Failed to load products'),
-                ElevatedButton(
-                    onPressed: _loadProducts,
-                    child: Text('Retry'),
-                  ),
-              ],
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                labelText: 'Search products...',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
             )
-            : _products.isEmpty
-            ? const Text('No products found')
-            : ListView.builder(
-                controller: _scrollController,
-                itemCount: _products.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == _products.length) {
-                    return _hasMore
-                        ? const Center(child: CircularProgressIndicator())
-                        : Center(child: const Text('No more products', style: TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.bold),));
-                  }
-
-                  final product = _products[index];
-
-                  return ListTile(
-                    leading: Image.network(product.thumbnail),
-                    title: Text(product.title),
-                    subtitle: Text('RM${product.price}'),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProductDetailPage(productId: product.id,),
-                        ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? Center(child: const CircularProgressIndicator())
+                : _hasError
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Failed to load products'),
+                      ElevatedButton(
+                        onPressed: _loadProducts,
+                        child: Text('Retry'),
+                      ),
+                    ],
+                  )
+                : _products.isEmpty
+                ? const Text('No products found')
+                : ListView.builder(
+                    controller: _scrollController,
+                    itemCount: _products.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == _products.length) {
+                        return _hasMore
+                            ? const Center(child: CircularProgressIndicator())
+                            : Center(
+                                child: const Text(
+                                  'No more products',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              );
+                      }
+          
+                      final product = _products[index];
+          
+                      return ListTile(
+                        leading: Image.network(product.thumbnail),
+                        title: Text(product.title),
+                        subtitle: Text('RM${product.price}'),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  ProductDetailPage(productId: product.id),
+                            ),
+                          );
+                        },
                       );
                     },
-                  );
-                },
-              ),
+                  ),
+          ),
+        ],
       ),
     );
   }
