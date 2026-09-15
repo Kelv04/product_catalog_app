@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:product_catalog_app/api/product_api.dart';
 import 'package:product_catalog_app/model/product_model.dart';
-import 'package:product_catalog_app/ui/product_detail.dart';
+import 'package:product_catalog_app/ui/widgets/product_card_widget.dart';
+import 'package:product_catalog_app/ui/widgets/search_bar_widget.dart';
 
 class ProductListPage extends StatefulWidget {
   const ProductListPage({super.key});
@@ -148,34 +149,16 @@ class _ProductListPageState extends State<ProductListPage> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search products...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _isSearching = false;
-                            skip = 0;
-                          });
-                          _loadProducts();
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: Colors.grey[100],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
+          CatalogSearchBar(
+            controller: _searchController,
+            onClear: () {
+              _searchController.clear();
+              setState(() {
+                _isSearching = false;
+                skip = 0;
+              });
+              _loadProducts();
+            },
           ),
           Expanded(
             child: _isLoading
@@ -222,52 +205,7 @@ class _ProductListPageState extends State<ProductListPage> {
                                 );
                         }
 
-                        final product = _products[index];
-
-                        return Card(
-                          margin: const EdgeInsets.all(6.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ListTile(
-                            leading: FadeInImage.assetNetwork(
-                              placeholder: 'assets/img_placeholder.png',
-                              image: product.thumbnail,
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                              imageErrorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.broken_image),
-                            ),
-                            title: Text(
-                              product.title,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            subtitle: Text(
-                              'RM${product.price}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
-                              ),
-                            ),
-                            trailing: const Icon(
-                              Icons.arrow_forward_ios,
-                              color: Colors.grey,
-                              size: 16,
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      ProductDetailPage(productId: product.id),
-                                ),
-                              );
-                            },
-                          ),
-                        );
+                        return ProductCard(product: _products[index]);
                       },
                     ),
                   ),
