@@ -158,43 +158,62 @@ class _ProductListPageState extends State<ProductListPage> {
                   )
                 : _products.isEmpty
                 ? const Text('No products found')
-                : ListView.builder(
-                    controller: _scrollController,
-                    itemCount: _products.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == _products.length) {
-                        return _hasMore
-                            ? const Center(child: CircularProgressIndicator())
-                            : Center(
-                                child: const Text(
-                                  'No more products',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                : RefreshIndicator(
+                  onRefresh: () async {
+                    skip = 0;
+                    final query = _searchController.text.trim();
+                    if (query.isEmpty) {
+                      _loadProducts();
+                    } else {
+                      _searchProducts(query);
+                    }
+                  },
+                  child: ListView.builder(
+                      controller: _scrollController,
+                      itemCount: _products.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == _products.length) {
+                          return _hasMore
+                              ? const Center(child: CircularProgressIndicator())
+                              : Center(
+                                  child: const Text(
+                                    'No more products',
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              );
-                      }
-          
-                      final product = _products[index];
-          
-                      return ListTile(
-                        leading: Image.network(product.thumbnail),
-                        title: Text(product.title),
-                        subtitle: Text('RM${product.price}'),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  ProductDetailPage(productId: product.id),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
+                                );
+                        }
+                        
+                        final product = _products[index];
+
+                        return ListTile(
+                          leading: FadeInImage.assetNetwork(
+                            placeholder: 'assets/img_placeholder.png',
+                            image: product.thumbnail,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                            imageErrorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.broken_image),
+                          ),
+                          title: Text(product.title),
+                          subtitle: Text('RM${product.price}'),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ProductDetailPage(productId: product.id),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                ),
           ),
         ],
       ),

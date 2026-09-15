@@ -78,9 +78,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     SizedBox(
                       height: 300,
                       child: PageView(
-                        children: _product!.images
-                            .map((img) => Image.network(img, fit: BoxFit.cover))
-                            .toList(),
+                        children: _product!.images.map((img) {
+                          return FadeInImage.assetNetwork(
+                            placeholder: 'assets/img_placeholder.png',
+                            image: img,
+                            fit: BoxFit.cover,
+                            imageErrorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.broken_image, size: 100),
+                          );
+                        }).toList(),
                       ),
                     ),
                     const SizedBox(height: 16),
