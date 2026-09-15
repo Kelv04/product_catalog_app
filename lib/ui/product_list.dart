@@ -114,33 +114,57 @@ class _ProductListPageState extends State<ProductListPage> {
       });
     }
   }
-  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue, Colors.purple],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: const Text(
           'Product Catalog',
           style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
+            color: Colors.white,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: true,
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(12.0),
             child: TextField(
               controller: _searchController,
-              decoration: const InputDecoration(
-                labelText: 'Search products...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: 'Search products...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: Colors.grey[100],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
               ),
-            )
+            ),
           ),
           Expanded(
             child: _isLoading
@@ -159,16 +183,16 @@ class _ProductListPageState extends State<ProductListPage> {
                 : _products.isEmpty
                 ? const Text('No products found')
                 : RefreshIndicator(
-                  onRefresh: () async {
-                    skip = 0;
-                    final query = _searchController.text.trim();
-                    if (query.isEmpty) {
-                      _loadProducts();
-                    } else {
-                      _searchProducts(query);
-                    }
-                  },
-                  child: ListView.builder(
+                    onRefresh: () async {
+                      skip = 0;
+                      final query = _searchController.text.trim();
+                      if (query.isEmpty) {
+                        _loadProducts();
+                      } else {
+                        _searchProducts(query);
+                      }
+                    },
+                    child: ListView.builder(
                       controller: _scrollController,
                       itemCount: _products.length + 1,
                       itemBuilder: (context, index) {
@@ -186,34 +210,56 @@ class _ProductListPageState extends State<ProductListPage> {
                                   ),
                                 );
                         }
-                        
+
                         final product = _products[index];
 
-                        return ListTile(
-                          leading: FadeInImage.assetNetwork(
-                            placeholder: 'assets/img_placeholder.png',
-                            image: product.thumbnail,
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                            imageErrorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.broken_image),
+                        return Card(
+                          margin: const EdgeInsets.all(6.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          title: Text(product.title),
-                          subtitle: Text('RM${product.price}'),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ProductDetailPage(productId: product.id),
+                          child: ListTile(
+                            leading: FadeInImage.assetNetwork(
+                              placeholder: 'assets/img_placeholder.png',
+                              image: product.thumbnail,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              imageErrorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.broken_image),
+                            ),
+                            title: Text(
+                              product.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
                               ),
-                            );
-                          },
+                            ),
+                            subtitle: Text(
+                              'RM${product.price}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green,
+                              ),
+                            ),
+                            trailing: const Icon(
+                              Icons.arrow_forward_ios,
+                              color: Colors.grey,
+                              size: 16,
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ProductDetailPage(productId: product.id),
+                                ),
+                              );
+                            },
+                          ),
                         );
                       },
                     ),
-                ),
+                  ),
           ),
         ],
       ),

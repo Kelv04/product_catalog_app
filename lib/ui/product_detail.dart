@@ -45,30 +45,48 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue, Colors.purple],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: Text(
           _product?.title ?? 'Product Details',
-          style: TextStyle(
-            color: Colors.black,
+          style: const TextStyle(
+            color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? Center(child: const CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : _hasError
-          ? Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Failed to load products'),
-                ElevatedButton(
-                  onPressed: _loadProductDetails,
-                  child: Text('Retry'),
-                ),
-              ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Failed to load product details',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: _loadProductDetails,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
             )
           : _product == null
-          ? const Text('Product not Found')
+          ? const Center(child: Text('Product not found'))
           : SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -79,36 +97,71 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       height: 300,
                       child: PageView(
                         children: _product!.images.map((img) {
-                          return FadeInImage.assetNetwork(
-                            placeholder: 'assets/img_placeholder.png',
-                            image: img,
-                            fit: BoxFit.cover,
-                            imageErrorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.broken_image, size: 100),
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: FadeInImage.assetNetwork(
+                              placeholder: 'assets/img_placeholder.png',
+                              image: img,
+                              fit: BoxFit.cover,
+                              imageErrorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.broken_image, size: 100),
+                            ),
                           );
                         }).toList(),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                     Text(
                       _product!.title,
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Price: RM${_product!.price}",
-                      style: const TextStyle(fontSize: 16),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "RM${_product!.price}",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star,
+                              color: Colors.orange,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              "${_product!.rating}",
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Rating: ${_product!.rating}",
-                      style: const TextStyle(fontSize: 16),
+                    const SizedBox(height: 20),
+                    Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          _product!.description,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 16),
-                    Text(_product!.description),
                   ],
                 ),
               ),
